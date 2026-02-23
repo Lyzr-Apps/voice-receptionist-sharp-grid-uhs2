@@ -2,9 +2,32 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRAGKnowledgeBase, validateFile } from '@/lib/ragKnowledgeBase'
-import type { RAGDocument } from '@/lib/ragKnowledgeBase'
 import { cn } from '@/lib/utils'
-import { FiPhone, FiGrid, FiBook, FiSettings, FiClock, FiCalendar, FiHelpCircle, FiUpload, FiTrash2, FiChevronLeft, FiChevronRight, FiMenu, FiSearch, FiFilter, FiPhoneCall, FiPhoneOff, FiMic, FiMicOff, FiCheck, FiAlertCircle, FiFile, FiActivity, FiChevronDown } from 'react-icons/fi'
+import {
+  FiPhone,
+  FiGrid,
+  FiBook,
+  FiSettings,
+  FiClock,
+  FiCalendar,
+  FiHelpCircle,
+  FiUpload,
+  FiTrash2,
+  FiChevronLeft,
+  FiChevronRight,
+  FiMenu,
+  FiSearch,
+  FiFilter,
+  FiPhoneCall,
+  FiPhoneOff,
+  FiMic,
+  FiMicOff,
+  FiCheck,
+  FiAlertCircle,
+  FiFile,
+  FiActivity,
+  FiChevronDown,
+} from 'react-icons/fi'
 
 // ===== CONSTANTS =====
 const VOICE_AGENT_ID = '699caba6d7658627bf6b63c5'
@@ -79,7 +102,7 @@ function formatFileSize(bytes: number | undefined): string {
 }
 
 // ===== ERROR BOUNDARY =====
-class ErrorBoundary extends React.Component<
+class PageErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean; error: string }
 > {
@@ -532,7 +555,7 @@ function KnowledgeBaseScreen() {
 function SettingsScreen() {
   const [businessName, setBusinessName] = useState('Heritage Dental Care')
   const [businessPhone, setBusinessPhone] = useState('(415) 555-0100')
-  const [operatingHours, setOperatingHours] = useState({
+  const [operatingHours, setOperatingHours] = useState<Record<string, { open: string; close: string }>>({
     mon: { open: '09:00', close: '17:00' },
     tue: { open: '09:00', close: '17:00' },
     wed: { open: '09:00', close: '17:00' },
@@ -636,7 +659,7 @@ function SettingsScreen() {
           } else if (msg.type === 'transcript') {
             setLiveTranscript(msg.text || msg.transcript || '')
           }
-        } catch {
+        } catch (_e) {
           // ignore parse errors
         }
       }
@@ -648,7 +671,7 @@ function SettingsScreen() {
       ws.onerror = () => {
         setCallStatus('ended')
       }
-    } catch {
+    } catch (_e) {
       setCallStatus('ended')
     }
   }
@@ -710,9 +733,9 @@ function SettingsScreen() {
               {Object.entries(operatingHours).map(([day, hours]) => (
                 <div key={day} className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
                   <span className="w-24 text-sm text-foreground font-medium">{dayLabels[day] ?? day}</span>
-                  <input type="time" value={hours.open} onChange={(e) => setOperatingHours(prev => ({ ...prev, [day]: { ...prev[day as keyof typeof prev], open: e.target.value } }))} className="px-3 py-2 bg-background border border-border/50 rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                  <input type="time" value={hours.open} onChange={(e) => setOperatingHours(prev => ({ ...prev, [day]: { ...prev[day], open: e.target.value } }))} className="px-3 py-2 bg-background border border-border/50 rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
                   <span className="text-muted-foreground text-sm">to</span>
-                  <input type="time" value={hours.close} onChange={(e) => setOperatingHours(prev => ({ ...prev, [day]: { ...prev[day as keyof typeof prev], close: e.target.value } }))} className="px-3 py-2 bg-background border border-border/50 rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                  <input type="time" value={hours.close} onChange={(e) => setOperatingHours(prev => ({ ...prev, [day]: { ...prev[day], close: e.target.value } }))} className="px-3 py-2 bg-background border border-border/50 rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
                 </div>
               ))}
             </div>
@@ -857,7 +880,7 @@ export default function Page() {
   }
 
   return (
-    <ErrorBoundary>
+    <PageErrorBoundary>
       <div className="min-h-screen bg-background text-foreground flex">
         {/* Mobile sidebar overlay */}
         {sidebarOpen && (
@@ -946,6 +969,6 @@ export default function Page() {
           </div>
         </main>
       </div>
-    </ErrorBoundary>
+    </PageErrorBoundary>
   )
 }

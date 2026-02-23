@@ -1,0 +1,8 @@
+{
+  "agent_name": "Voice Receptionist Agent",
+  "agent_id": "699caba6d7658627bf6b63c5",
+  "description": "Professional voice AI receptionist that answers inbound calls, responds to common business questions by searching the knowledge base, checks calendar availability, and books appointments via Google Calendar \u2014 all through natural spoken conversation with a formal, corporate tone",
+  "agent_type": "voice",
+  "accessor": "websocket",
+  "auto_generated": true
+}

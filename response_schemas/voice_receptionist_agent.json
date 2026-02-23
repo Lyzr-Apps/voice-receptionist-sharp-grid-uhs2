@@ -1,0 +1,51 @@
+{
+  "agent_name": "Voice Receptionist Agent",
+  "agent_id": "699caba6d7658627bf6b63c5",
+  "description": "Professional voice AI receptionist that answers inbound calls, responds to common business questions by searching the knowledge base, checks calendar availability, and books appointments via Google Calendar — all through natural spoken conversation with a formal, corporate tone",
+  "agent_type": "voice",
+  "accessor": "websocket",
+  "auto_generated": true,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "AgentResponse",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "response_text": {
+            "type": "string",
+            "description": "The receptionist response to the caller"
+          },
+          "action_taken": {
+            "type": "string",
+            "description": "What action was performed: faq_answered, availability_checked, appointment_booked, general_greeting, call_ended"
+          },
+          "appointment_details": {
+            "type": ["object", "null"],
+            "description": "Details of any appointment booked",
+            "properties": {
+              "caller_name": { "type": "string" },
+              "date_time": { "type": "string" },
+              "purpose": { "type": "string" },
+              "calendar_event_id": { "type": "string" }
+            },
+            "required": ["caller_name", "date_time", "purpose", "calendar_event_id"],
+            "additionalProperties": false
+          },
+          "faq_answer": {
+            "type": ["string", "null"],
+            "description": "The FAQ answer retrieved from knowledge base if applicable"
+          },
+          "available_slots": {
+            "type": ["array", "null"],
+            "description": "List of available time slots if availability was checked",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["response_text", "action_taken", "appointment_details", "faq_answer", "available_slots"],
+        "additionalProperties": false
+      }
+    }
+  }
+}

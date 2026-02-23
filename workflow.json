@@ -1,0 +1,32 @@
+{
+  "nodes": [
+    {
+      "id": "input_node",
+      "type": "Input",
+      "label": "Inbound Voice Call",
+      "nodeCategory": "input"
+    },
+    {
+      "id": "voice_receptionist_agent",
+      "type": "Agent",
+      "label": "Voice Receptionist Agent",
+      "nodeCategory": "agent"
+    },
+    {
+      "id": "output_node",
+      "type": "Output",
+      "label": "Call Response",
+      "nodeCategory": "end"
+    }
+  ],
+  "edges": [
+    {
+      "source": "input_node",
+      "target": "voice_receptionist_agent"
+    },
+    {
+      "source": "voice_receptionist_agent",
+      "target": "output_node"
+    }
+  ]
+}

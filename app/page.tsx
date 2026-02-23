@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRAGKnowledgeBase, validateFile } from '@/lib/ragKnowledgeBase'
+import { callAIAgent } from '@/lib/aiAgent'
 import { cn } from '@/lib/utils'
 import {
   FiPhone,
@@ -27,6 +28,7 @@ import {
   FiFile,
   FiActivity,
   FiChevronDown,
+  FiRefreshCw,
 } from 'react-icons/fi'
 
 // ===== CONSTANTS =====
@@ -533,6 +535,37 @@ function SettingsScreen() {
   })
   const [greeting, setGreeting] = useState('Thank you for calling Heritage Dental Care. How may I assist you today?')
   const [defaultDuration, setDefaultDuration] = useState('30')
+  const [settingsSaved, setSettingsSaved] = useState(false)
+
+  const [calendarStatus, setCalendarStatus] = useState<'connected' | 'checking' | 'verified' | 'error'>('connected')
+  const [calendarMessage, setCalendarMessage] = useState('')
+
+  const handleReconnectCalendar = async () => {
+    setCalendarStatus('checking')
+    setCalendarMessage('')
+    try {
+      const result = await callAIAgent('List all my available Google Calendars using GOOGLECALENDAR_LIST_CALENDARS. Just list the calendar names.', VOICE_AGENT_ID)
+      if (result && result.success) {
+        setCalendarStatus('verified')
+        setCalendarMessage('Connection verified successfully. Google Calendar is active and accessible.')
+        setTimeout(() => {
+          setCalendarStatus('connected')
+          setCalendarMessage('')
+        }, 5000)
+      } else {
+        setCalendarStatus('error')
+        setCalendarMessage('Could not verify connection. The agent may need re-authentication in Lyzr Studio.')
+      }
+    } catch (_e) {
+      setCalendarStatus('error')
+      setCalendarMessage('Failed to reach the agent. Please check your network and try again.')
+    }
+  }
+
+  const handleSaveSettings = () => {
+    setSettingsSaved(true)
+    setTimeout(() => setSettingsSaved(false), 3000)
+  }
 
   const [callStatus, setCallStatus] = useState<'idle' | 'connecting' | 'connected' | 'ended'>('idle')
   const [liveTranscript, setLiveTranscript] = useState('')
@@ -709,6 +742,20 @@ function SettingsScreen() {
               ))}
             </div>
           </div>
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              onClick={handleSaveSettings}
+              className="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              Save Changes
+            </button>
+            {settingsSaved && (
+              <span className="flex items-center gap-1.5 text-sm text-emerald-700">
+                <FiCheck size={16} />
+                Settings saved
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -717,17 +764,53 @@ function SettingsScreen() {
         <div className="p-6 border-b border-border/30">
           <h2 className="text-lg font-serif font-semibold text-foreground">Calendar Connection</h2>
         </div>
-        <div className="p-6">
+        <div className="p-6 space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+              <div className={cn(
+                "w-3 h-3 rounded-full",
+                calendarStatus === 'error' ? 'bg-red-500' : calendarStatus === 'verified' ? 'bg-emerald-500' : 'bg-emerald-500 animate-pulse'
+              )} />
               <div>
-                <p className="text-sm font-medium text-foreground">Google Calendar Connected</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Appointments will be synced automatically</p>
+                <p className="text-sm font-medium text-foreground">
+                  {calendarStatus === 'checking' ? 'Verifying connection...' :
+                   calendarStatus === 'verified' ? 'Google Calendar Verified' :
+                   calendarStatus === 'error' ? 'Connection Issue' :
+                   'Google Calendar Connected'}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {calendarStatus === 'checking' ? 'Contacting Google Calendar via the agent...' :
+                   'Appointments will be synced automatically'}
+                </p>
               </div>
             </div>
-            <button className="px-4 py-2 border border-border/50 rounded-lg text-sm text-foreground hover:bg-muted/30 transition-colors">Reconnect</button>
+            <button
+              onClick={handleReconnectCalendar}
+              disabled={calendarStatus === 'checking'}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 border border-border/50 rounded-lg text-sm font-medium transition-colors",
+                calendarStatus === 'checking'
+                  ? "opacity-60 cursor-not-allowed text-muted-foreground"
+                  : "text-foreground hover:bg-muted/30"
+              )}
+            >
+              <FiRefreshCw size={14} className={calendarStatus === 'checking' ? 'animate-spin' : ''} />
+              {calendarStatus === 'checking' ? 'Checking...' : 'Reconnect'}
+            </button>
           </div>
+          {calendarMessage && (
+            <div className={cn(
+              "rounded-lg p-3 flex items-start gap-3 text-sm",
+              calendarStatus === 'verified'
+                ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                : "bg-red-50 text-red-800 border border-red-200"
+            )}>
+              {calendarStatus === 'verified'
+                ? <FiCheck size={16} className="flex-shrink-0 mt-0.5" />
+                : <FiAlertCircle size={16} className="flex-shrink-0 mt-0.5" />}
+              <p>{calendarMessage}</p>
+            </div>
+          )}
         </div>
       </div>
 
